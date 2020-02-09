@@ -2,6 +2,6 @@
 {
     public static class DesignTimeViewModelLocator
     {
-        public static MainWindowViewModel MainWindowViewModel => null;
+        public static MainWindowViewModel? MainWindowViewModel => null;
     }
 }

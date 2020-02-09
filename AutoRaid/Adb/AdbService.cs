@@ -2,67 +2,68 @@
 using SharpAdbClient;
 using System.IO;
 using System.IO.Abstractions;
-using System.Net;
 using System.Threading;
+using AutoRaid.Contracts;
 
 namespace AutoRaid.Adb
 {
-    public sealed class AdbService : IAdbService, IDisposable
+    public sealed class AdbService : IAdbService
     {
         private readonly IFileSystem _fileSystem;
         private readonly IAdbServer _adbServer;
         private readonly IAdbClient _adbClient;
-        private readonly ISyncService _syncService;
+        private readonly ISyncServiceFactory _syncServiceFactory;
+        private readonly IEnvironmentService _environmentService;
 
         public AdbService(
             IFileSystem fileSystem, 
             IAdbServer adbServer, 
             IAdbClient adbClient, 
-            ISyncService syncService)
+            ISyncServiceFactory syncServiceFactory,
+            IEnvironmentService environmentService)
         {
             _fileSystem = fileSystem;
             _adbServer = adbServer;
             _adbClient = adbClient;
-            _syncService = syncService;
+            _syncServiceFactory = syncServiceFactory;
+            _environmentService = environmentService;
         }
 
         public byte[] GetScreenshot()
         {
+            var isConnected = EnsureAdbServerRunning();
+            if (isConnected == false)
+            {
+                return Array.Empty<byte>();
+            }
+
             var device = _adbClient.GetDevices()[0];
-            var screenshotPathOnDevice = "/sdcard/DCIM/raid.png";
+            const string screenshotPathOnDevice = "/sdcard/DCIM/raid.png";
 
             _adbClient.ExecuteRemoteCommand($"screencap -p {screenshotPathOnDevice}", device, new DebugReceiver());
 
-            using (var socket = new AdbSocket(new IPEndPoint(IPAddress.Loopback, AdbClient.AdbServerPort)))
-            {
-                using (var memoryStream = new MemoryStream())
-                {
-                    _syncService.Pull(screenshotPathOnDevice, memoryStream, null, CancellationToken.None);
-                    return memoryStream.ToArray();
-                }
-                
-            }
+            using var memoryStream = new MemoryStream();
+            using var adbSocket = new AdbSocket(_adbClient.EndPoint);
+            using var syncService = _syncServiceFactory.Create(adbSocket, device);
+            syncService.Pull(screenshotPathOnDevice, memoryStream, null, CancellationToken.None);
+            return memoryStream.ToArray();
         }
 
-        public bool StartAdbServer()
+        public bool EnsureAdbServerRunning()
         {
-            var status = AdbServer.Instance.GetStatus();
+            var status = _adbServer.GetStatus();
             if (status.IsRunning == false)
             {
-                var androidSdkRoot = Environment.GetEnvironmentVariable("ANDROID_SDK_ROOT");
-                var adbPath = Path.Combine(androidSdkRoot, "platform-tools", "adb.exe");
-                if (File.Exists(adbPath))
+                var androidSdkRoot = _environmentService.GetEnvironmentVariable("ANDROID_SDK_ROOT");
+                var adbPath = _fileSystem.Path.Combine(androidSdkRoot, "platform-tools", "adb.exe");
+                if (_fileSystem.File.Exists(adbPath))
                 {
-                    var startResult = AdbServer.Instance.StartServer(adbPath, restartServerIfNewer: false);
+                    var startResult = _adbServer.StartServer(adbPath, restartServerIfNewer: false);
                     return startResult == StartServerResult.Started;
                 }
             }
 
-            return false;
-        }
-
-        public void Dispose() {
-            _syncService.Dispose();
+            return true;
         }
     }
 }

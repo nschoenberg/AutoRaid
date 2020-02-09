@@ -6,29 +6,77 @@
         mc:Ignorable="d"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:viewModels="clr-namespace:AutoRaid.ViewModels"
+        xmlns:converter="clr-namespace:AutoRaid.Converter"
         d:DataContext="{d:DesignInstance {x:Type viewModels:MainWindowViewModel}}"
         prism:ViewModelLocator.AutoWireViewModel="True"
-        Title="{Binding Title}" Height="350" Width="525" >
+        Title="{Binding Title}" Height="600" Width="1000" >
+    <Window.Resources>
+        <ResourceDictionary>
+            <converter:FontWeightBoldConverter x:Key="FontWeightBoldConverter" />
+            <converter:FontWeightOpacityConverter x:Key="FontWeightOpacityConverter" />
+        </ResourceDictionary>
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="800" />
+            <ColumnDefinition Width="200" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
-        
-        <Image Source="{Binding Screenshot}"  Grid.RowSpan="2"/>
-        
-        <Image Grid.Column="1" Grid.Row="0" Source="{Binding Cropped}" />
-        <Image Grid.Column="1" Grid.Row="1" Source="{Binding Scaled}"  />
-        
-        <StackPanel Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" >
+
+        <Image Source="{Binding Screenshot}"  
+               VerticalAlignment="Top"
+               MinWidth="800" 
+               MinHeight="450"/>
+
+        <StackPanel Grid.Column="1" 
+                    Grid.Row="0" >
+            <Image Source="{Binding Cropped}" 
+                   MaxWidth="75" 
+                   MaxHeight="75" 
+                   HorizontalAlignment="Center" />
+            <Label HorizontalAlignment="Center"
+                   Content="Cropped" />
+
+            <Image Source="{Binding Scaled}"  
+                   MaxWidth="75" 
+                   MaxHeight="75" />
+            <Label HorizontalAlignment="Center"
+                   Content="Monochrom" />
+
+            <ItemsControl HorizontalAlignment="Center" ItemsSource="{Binding Hash}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="16" Rows="16" /> 
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Width="10" Height="10" >
+                            <TextBlock Text="{Binding .}" 
+                                       FontFamily="Courier New" 
+                                       Opacity="{Binding ., Converter={StaticResource FontWeightOpacityConverter}}"
+                                       FontSize="10" 
+                                       FontWeight="{Binding ., Converter={StaticResource FontWeightBoldConverter}}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Label HorizontalAlignment="Center"
+                   Content="Hash" />
+
+        </StackPanel>
+
+        <StackPanel Grid.Column="0" 
+                    Grid.Row="1" 
+                    Grid.ColumnSpan="2" 
+                    Orientation="Horizontal" >
             <Button Content="Screen Shot" Command="{Binding TakeScreenshotCommand}"/>
             <Button Content="Replay" Command="{Binding PlayAgainCommand}"/>
         </StackPanel>
-        
+
     </Grid>
 </Window>

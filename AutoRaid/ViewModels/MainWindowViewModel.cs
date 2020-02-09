@@ -4,12 +4,10 @@ using Prism.Mvvm;
 using SharpAdbClient;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -24,38 +22,44 @@ namespace AutoRaid.ViewModels
     public class MainWindowViewModel : BindableBase
     {
         private string _title = "AutoRaid: VDT";
-        private ICommand _playAgainCommand;
-        private Random _random;
+        private readonly Random _random;
         private readonly IAdbService _adbService;
-        private ICommand _takeScreenShotCommand;
+
+
+        private ImageSource? _screenShot;
+        private ImageSource? _cropped;
+        private ImageSource? _scaled;
 
         public MainWindowViewModel(IAdbService adbService)
         {
+            PlayAgainCommand = new DelegateCommand(ExecutePlayAgainCommand);
+            TakeScreenshotCommand = new DelegateCommand(ExecuteTakeScreenshotCommand);
+            _random = new Random();
             _adbService = adbService;
-
         }
 
-        private ImageSource _screenShot;
-        public ImageSource Screenshot
+
+        public ImageSource? Screenshot
         {
             get { return _screenShot; }
             set { SetProperty(ref _screenShot, value); }
         }
 
-        private ImageSource _cropped;
-        private ImageSource _scaled;
-
-        public ImageSource Cropped
+        public ImageSource? Cropped
         {
             get { return _cropped; }
             set { SetProperty(ref _cropped, value); }
         }
 
-        public ImageSource Scaled
+        public ImageSource? Scaled
         {
             get { return _scaled; }
             set { SetProperty(ref _scaled, value); }
         }
+
+        private volatile bool _isSendReplayToggleActive;
+
+        public ObservableCollection<int> Hash { get; } = new ObservableCollection<int>();
 
         public string Title
         {
@@ -64,60 +68,39 @@ namespace AutoRaid.ViewModels
         }
 
 
-        public ICommand PlayAgainCommand
-        {
-            get { return _playAgainCommand ??= new DelegateCommand(ExecutePlayAgainCommand); }
-        }
+        public ICommand PlayAgainCommand { get; }
 
-        public ICommand TakeScreenshotCommand
-        {
-            get { return _takeScreenShotCommand ??= new DelegateCommand(ExecuteTakeScreenshotCommand); }
-        }
+        public ICommand TakeScreenshotCommand { get; }
 
         private void ExecuteTakeScreenshotCommand()
         {
-            using (var ms = new MemoryStream(_adbService.GetScreenshot()))
-            {
-                ms.Position = 0;
-                var image = new BitmapImage();
-                image.BeginInit();
-                image.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.UriSource = null;
-                image.StreamSource = ms;
-                image.EndInit();
+            //var file = File.ReadAllBytes(
+            //    @"d:\source\c#\AutoRaid\AutoRaid.Tests\TestData\victory_screen_all_heroes_max.png");
 
-                var croppedImage = new CroppedBitmap(image, new Int32Rect(1500, 20, 80, 80));
+            using var ms = new MemoryStream(_adbService.GetScreenshot()) { Position = 0 };
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.UriSource = null;
+            image.StreamSource = ms;
+            image.EndInit();
 
-                Screenshot = image;
-                Cropped = croppedImage;
-                
-                var thumbnail = CreateResizedImage(croppedImage, 16, 16, 0);
+            var croppedImage = new CroppedBitmap(image, new Int32Rect(1500, 20, 80, 80));
 
-                using (var bitmap = ConvertToBitmap(thumbnail))
-                {
-                    var blackWhiteResult = CreateBlackAndWhite(bitmap);
-                    Scaled = ConvertToImageSource(blackWhiteResult.bitmap);
-                    var sb = new StringBuilder();
-                    var hash = blackWhiteResult.hash;
-                    for (var i = 0; i < hash.Length; i++)
-                    {
-                        sb.Append(hash[i]);
-                        if (i > 0 && i % 16 == 0)
-                        {
-                            sb.AppendLine();
-                        }
-                    }
+            Screenshot = image;
+            Cropped = croppedImage;
 
-                    Debug.Write(sb.ToString());
-                }
-                
-            }
-            
+            var thumbnail = CreateResizedImage(croppedImage, 16, 16, 0);
+
+            using var bitmap = ConvertToBitmap(thumbnail);
+            var blackWhiteResult = CreateBlackAndWhite(bitmap);
+            Scaled = ConvertToImageSource(blackWhiteResult.bitmap);
+            Hash.Clear();
+            Hash.AddRange(blackWhiteResult.hash);
         }
 
-
-
+        [NotNull]
         private static BitmapFrame CreateResizedImage(ImageSource source, int width, int height, int margin)
         {
             var rect = new Rect(margin, margin, width - margin * 2, height - margin * 2);
@@ -139,7 +122,7 @@ namespace AutoRaid.ViewModels
             return BitmapFrame.Create(resizedImage);
         }
 
-        public static Bitmap ConvertToBitmap([NotNull] BitmapSource bitmapSource)
+        private static Bitmap ConvertToBitmap([NotNull] BitmapSource bitmapSource)
         {
             var width = bitmapSource.PixelWidth;
             var height = bitmapSource.PixelHeight;
@@ -147,7 +130,7 @@ namespace AutoRaid.ViewModels
             var memoryBlockPointer = Marshal.AllocHGlobal(height * stride);
             bitmapSource.CopyPixels(new Int32Rect(0, 0, width, height), memoryBlockPointer, height * stride, stride);
             var bitmap = new Bitmap(width, height, stride, PixelFormat.Format32bppPArgb, memoryBlockPointer);
-            
+
             for (var x = 0; x < width; x++)
             {
                 for (var y = 0; y < height; y++)
@@ -162,7 +145,7 @@ namespace AutoRaid.ViewModels
             return bitmap;
         }
 
-        private (Bitmap bitmap, int[] hash) CreateBlackAndWhite(Bitmap bitmap)
+        private static (Bitmap bitmap, int[] hash) CreateBlackAndWhite(Bitmap bitmap)
         {
             var width = bitmap.Width;
             var height = bitmap.Height;
@@ -174,11 +157,12 @@ namespace AutoRaid.ViewModels
             {
                 for (var y = 0; y < height; y++)
                 {
-                    var pixel = bitmap.GetPixel(x, y);
+                    // Using y, x here instead of x, y so that calculated hash has specific order
+                    var pixel = bitmap.GetPixel(y, x);
                     var hashNum = pixel.GetBrightness() <= 0.5f ? 0 : 1;
                     hash[hashIndex++] = hashNum;
                     var color = pixel.GetBrightness() <= 0.5f ? Color.White : Color.Black;
-                    result.SetPixel(x, y, color);
+                    result.SetPixel(y, x, color);
                 }
 
             }
@@ -186,7 +170,7 @@ namespace AutoRaid.ViewModels
             return (result, hash);
         }
 
-        public BitmapImage ConvertToImageSource([NotNull] Bitmap src)
+        private static BitmapImage ConvertToImageSource([NotNull] Bitmap src)
         {
             var ms = new MemoryStream();
             src.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
@@ -200,23 +184,37 @@ namespace AutoRaid.ViewModels
 
         private void ExecutePlayAgainCommand()
         {
-            _random = new Random();
-            _ = StartSendReplayAsync();
+            if (_isSendReplayToggleActive == false)
+            {
+                var isRunning = _adbService.EnsureAdbServerRunning();
+                if (isRunning)
+                {
+                    _isSendReplayToggleActive = true;
+                    _ = StartSendReplayAsync();
+                }
+            }
+            else
+            {
+                _isSendReplayToggleActive = false;
+            }
         }
 
         private async Task StartSendReplayAsync()
         {
-            var delayTime = _random.Next(5000, 10000);
+            if (_isSendReplayToggleActive)
+            {
+                var delayTime = _random.Next(5000, 10000);
 
-            await Task.Run(SendReplay).ConfigureAwait(false);
-            await Task.Delay(delayTime).ConfigureAwait(false);
-            await StartSendReplayAsync().ConfigureAwait(false);
+                await Task.Run(SendReplay).ConfigureAwait(false);
+                await Task.Delay(delayTime).ConfigureAwait(false);
+                await StartSendReplayAsync().ConfigureAwait(false);
+            }
         }
 
         public static void SendReplay()
         {
 
-            var client = SharpAdbClient.AdbClient.Instance;
+            var client = AdbClient.Instance;
             var device = client.GetDevices()[0];
 
             var receiver = new DebugReceiver();

@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <AssemblyName>AutoRaid</AssemblyName>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.3" />
@@ -14,5 +15,8 @@
     <PackageReference Include="Prism.DryIoc" Version="7.2.0.1422" />
     <PackageReference Include="sharpadbclient" Version="2.2.35" />
     <PackageReference Include="System.IO.Abstractions" Version="8.0.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AutoRaid.Contracts\AutoRaid.Contracts.csproj" />
   </ItemGroup>
 </Project>

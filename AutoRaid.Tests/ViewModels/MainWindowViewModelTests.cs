@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using System.Text;
 using AutoRaid.ViewModels;
 using SharpAdbClient;
@@ -11,6 +9,7 @@ namespace AutoRaid.Tests.ViewModels
     public class MainWindowViewModelTests
     {
         private readonly OutputReceiver _receiver;
+        private readonly ITestOutputHelper _testOutputHelper;
 
         private class OutputReceiver : IShellOutputReceiver
         {
@@ -39,6 +38,7 @@ namespace AutoRaid.Tests.ViewModels
 
         public MainWindowViewModelTests(Xunit.Abstractions.ITestOutputHelper testOutputHelper)
         {
+            _testOutputHelper = testOutputHelper;
             _receiver = new OutputReceiver(testOutputHelper);
         }
 
