@@ -21,5 +21,5 @@ The calculated hash will be used to determine if a specific UI element is curren
 
 ## Requirements
 * Android SDK installed, Environment Variable %ANDROID_SDK_ROOT% configured
-* BlueStacks Emulator, using Open GLEngine with Display Settings 1600x900 on 240 DPI
+* BlueStacks Emulator, using OpenGL Engine with Display Settings 1600x900 on 240 DPI
 * In BlueStacks Settings Menu / Preferences, Enable Android Debug Bridge (ADB)
