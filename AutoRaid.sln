@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoRaid", "AutoRaid\AutoRaid.csproj", "{83A20A64-01DC-4E05-B5E9-FAD43F6EBC99}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoRaid.Tests", "AutoRaid.Tests\AutoRaid.Tests.csproj", "{EC134771-7CF4-4899-9BA8-FAB434A78239}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C64AE95B-78DF-4944-9BA5-5FCB0842E154}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{83A20A64-01DC-4E05-B5E9-FAD43F6EBC99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83A20A64-01DC-4E05-B5E9-FAD43F6EBC99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83A20A64-01DC-4E05-B5E9-FAD43F6EBC99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83A20A64-01DC-4E05-B5E9-FAD43F6EBC99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC134771-7CF4-4899-9BA8-FAB434A78239}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC134771-7CF4-4899-9BA8-FAB434A78239}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC134771-7CF4-4899-9BA8-FAB434A78239}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC134771-7CF4-4899-9BA8-FAB434A78239}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1164B8AC-FB37-4D5E-8FD8-8603385DD915}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,2 @@
+﻿Image compare algo
+https://stackoverflow.com/questions/35151067/algorithm-to-compare-two-images-in-c-sharp#

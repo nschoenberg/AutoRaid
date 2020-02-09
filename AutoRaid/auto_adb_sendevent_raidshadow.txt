@@ -1,0 +1,36 @@
+/dev/input/event8: EV_ABS       ABS_MT_POSITION_X    00003df8
+/dev/input/event8: EV_ABS       ABS_MT_POSITION_Y    000072e6
+/dev/input/event8: EV_SYN       SYN_MT_REPORT        00000000
+/dev/input/event8: EV_SYN       SYN_REPORT           00000000
+/dev/input/event8: EV_ABS       ABS_MT_POSITION_X    00003df8
+/dev/input/event8: EV_ABS       ABS_MT_POSITION_Y    000072e6
+/dev/input/event8: EV_SYN       SYN_MT_REPORT        00000000
+/dev/input/event8: EV_SYN       SYN_REPORT           00000000
+/dev/input/event8: EV_ABS       ABS_MT_POSITION_X    00003df8
+/dev/input/event8: EV_ABS       ABS_MT_POSITION_Y    000072e6
+/dev/input/event8: EV_SYN       SYN_MT_REPORT        00000000
+/dev/input/event8: EV_SYN       SYN_REPORT           00000000
+/dev/input/event8: EV_ABS       ABS_MT_POSITION_X    00003df8
+/dev/input/event8: EV_ABS       ABS_MT_POSITION_Y    000072bc
+/dev/input/event8: EV_SYN       SYN_MT_REPORT        00000000
+/dev/input/event8: EV_SYN       SYN_REPORT           00000000
+/dev/input/event8: EV_SYN       SYN_MT_REPORT        00000000
+/dev/input/event8: EV_SYN       SYN_REPORT           00000000
+
+sendevent /dev/input/event8 3 53 16336
+sendevent /dev/input/event8 3 54 29875
+sendevent /dev/input/event8 3 48 5
+sendevent /dev/input/event8 3 58 50
+sendevent /dev/input/event8 0 2 0
+sendevent /dev/input/event8 0 0 0
+
+sendevent /dev/input/event8 3 53 16336
+sendevent /dev/input/event8 3 54 29875
+sendevent /dev/input/event8 3 48 5
+sendevent /dev/input/event8 3 58 50
+sendevent /dev/input/event8 0 2 0
+sendevent /dev/input/event8 0 0 0
+
+sendevent /dev/input/event8 0 2 0
+sendevent /dev/input/event8 0 0 0
+
